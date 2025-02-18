@@ -6,7 +6,7 @@
 #    By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/08 20:10:29 by abakirca          #+#    #+#              #
-#    Updated: 2025/02/17 16:41:53 by abakirca         ###   ########.fr        #
+#    Updated: 2025/02/18 15:10:23 by abakirca         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,7 +34,7 @@ all				:	$(NAME)
 
 $(NAME)			:	$(OBJS)
 					@$(CC) $(CFLAGS) $^ -o $(NAME)
-					@echo "\n\e[1m$(COLOR_YELLOW)$(NAME)	$(COLOR_GREEN)[is ready!]\e[0m\n$(COLOR_END)"
+					@echo "\n\e[1m$(COLOR_YELLOW)$(NAME)		$(COLOR_GREEN)[is ready!]\e[0m\n$(COLOR_END)"
 
 $(OBJS_DIR)%.o	:	$(SRCS_DIR)%.cpp
 					@mkdir -p $(@D)
@@ -47,7 +47,7 @@ clean			:
 
 fclean			:	clean
 					@$(RM) $(NAME)
-					@echo "\e[1m$(COLOR_YELLOW)$(NAME)	$(COLOR_RED)[is deleted!]\e[0m$(COLOR_END)"
+					@echo "\e[1m$(COLOR_YELLOW)$(NAME)		$(COLOR_RED)[is deleted!]\e[0m$(COLOR_END)"
 
 re				:	fclean all
 

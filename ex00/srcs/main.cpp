@@ -6,31 +6,26 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/17 11:38:42 by abakirca          #+#    #+#             */
-/*   Updated: 2025/02/17 17:00:08 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/02/18 18:43:31 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "BitcoinExchange.hpp"
 
-int main(void)
+int main(int ac, char **av)
 {
+	if (ac != 2)
+	{
+		std::cout << RED"Error: could not open file." << RESET << std::endl;
+		return (1);
+	}
 	try
 	{
-		BitcoinExchange exchange;
-		std::map<std::string, float>::iterator it;
-		// for (it = exchange.data.begin(); it != exchange.data.end(); it++)
-		// {
-		// 	std::cout << it->first << " " << it->second << std::endl;
-		// }
-		for (it = exchange.input.begin(); it != exchange.input.end(); it++)
-		{
-			std::cout << it->first << " " << it->second << std::endl;
-		}
+		BitcoinExchange exchange(av[1]);
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << RED"Exception: " << e.what() << RESET << std::endl;
 	}
-	
 	return (0);
 }
