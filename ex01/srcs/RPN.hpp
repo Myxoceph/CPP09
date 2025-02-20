@@ -6,7 +6,7 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/18 18:47:17 by abakirca          #+#    #+#             */
-/*   Updated: 2025/02/19 16:51:15 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/02/20 13:34:42 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,19 @@
 #define RED "\033[1;31m"
 #define RESET "\033[0m"
 
+#define PLUS 43
+#define MINUS 45
+#define MULTIPLY 42
+#define DIVIDE 47
+
 class Rpn
 {
 	private:
 			std::stack<int> stack;
-			void parseInput(const std::string& input);
+			void handleInput(const std::string& handle);
 			std::string remove_whitespaces(const std::string &str);
+			void checkInput(const std::string& input);
+			void fillStack(const std::string& handle);
 	public:
 			Rpn();
 			Rpn(const std::string& input);
