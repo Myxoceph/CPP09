@@ -6,7 +6,7 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 15:44:49 by abakirca          #+#    #+#             */
-/*   Updated: 2025/02/20 15:44:50 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/02/24 18:00:27 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,12 @@
 #define PMERGEME_HPP
 
 #include <iostream>
+#include <vector>
+#include <deque>
+#include <limits>
+#include <exception>
+#include <cstdlib>
+#include <ctime>
 
 #define GREEN "\033[1;32m"
 #define YELLOW "\033[1;33m"
@@ -26,13 +32,22 @@
 class PMergeMe
 {
 	private:
-			
+			std::vector<int> vecarr;
+			std::deque<int> deqarr;
 	public:
 			PMergeMe();
-			PMergeMe(const std::string& input);
+			PMergeMe(char **input);
 			PMergeMe(const PMergeMe &copy);
 			PMergeMe &operator=(const PMergeMe &copy);
 			~PMergeMe();
+			template <typename T>
+			void FordJohnson(T &c);
+			template <typename T>
+			void mergeSort(T &c, const T &left, const T &right);
+			template <typename T>
+			void insertionSort(T &c);
+			void checkInput(char **av);
+			void print(char **input);
 };
 
 #endif
