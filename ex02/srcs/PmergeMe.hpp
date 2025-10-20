@@ -6,7 +6,7 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 15:44:49 by abakirca          #+#    #+#             */
-/*   Updated: 2025/02/24 18:00:27 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/10/20 16:51:13 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,11 @@ class PMergeMe
 			template <typename T>
 			void FordJohnson(T &c);
 			template <typename T>
-			void mergeSort(T &c, const T &left, const T &right);
+			size_t generateJacobsthal(size_t n);
 			template <typename T>
-			void insertionSort(T &c);
+			void generateJacobsthalSequence(std::vector<size_t> &seq, size_t len);
+			template <typename T>
+			typename T::iterator binaryInsert(T &c, typename T::iterator begin, typename T::iterator end, typename T::value_type value);
 			void checkInput(char **av);
 			void print(char **input);
 };

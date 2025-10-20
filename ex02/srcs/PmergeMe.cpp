@@ -6,7 +6,7 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 15:42:55 by abakirca          #+#    #+#             */
-/*   Updated: 2025/02/24 18:10:31 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/10/20 16:53:02 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,38 +42,57 @@ PMergeMe::~PMergeMe()
 }
 
 template <typename T>
-void PMergeMe::mergeSort(T &c, const T &left, const T &right) 
+size_t PMergeMe::generateJacobsthal(size_t n)
 {
-	c.clear();
-	size_t i = 0
-	size_t j = 0;
-	while (i < left.size() && j < right.size())
+	if (n == 0)
+		return 0;
+	if (n == 1)
+		return 1;
+	size_t a = 0;
+	size_t b = 1;
+	size_t result = 0;
+	for (size_t i = 2; i <= n; i++)
 	{
-		if (left[i] <= right[j])
-			c.push_back(left[i++]);
-		else
-			c.push_back(right[j++]);
+		result = b + 2 * a;
+		a = b;
+		b = result;
 	}
-	while (i < left.size())
-		c.push_back(left[i++]);
-	while (j < right.size())
-		c.push_back(right[j++]);
+	return result;
 }
 
 template <typename T>
-void PMergeMe::insertionSort(T &c) 
+void PMergeMe::generateJacobsthalSequence(std::vector<size_t> &seq, size_t len)
 {
-	for (size_t i = 1; i < c.size(); ++i)
+	seq.clear();
+	if (len == 0)
+		return;
+	
+	size_t idx = 3;
+	while (true)
 	{
-		typename T::value_type key = c[i];
-		int j = i - 1;
-		while (j >= 0 && c[j] > key)
-		{
-			c[j + 1] = c[j];
-			j--;
-		}
-		c[j + 1] = key;
+		size_t jacob = generateJacobsthal<T>(idx);
+		if (jacob >= len)
+			break;
+		seq.push_back(jacob);
+		idx++;
 	}
+}
+
+template <typename T>
+typename T::iterator PMergeMe::binaryInsert(T &c, typename T::iterator begin, typename T::iterator end, typename T::value_type value)
+{
+	typename T::iterator left = begin;
+	typename T::iterator right = end;
+	
+	while (left < right)
+	{
+		typename T::iterator mid = left + std::distance(left, right) / 2;
+		if (*mid < value)
+			left = mid + 1;
+		else
+			right = mid;
+	}
+	return c.insert(left, value);
 }
 
 template <typename T>
@@ -81,24 +100,131 @@ void PMergeMe::FordJohnson(T &c)
 {
 	if (c.size() <= 1)
 		return;
-	if (c.size() == 2)
+	
+	// Step 1: Create pairs and compare
+	size_t n = c.size();
+	bool hasStraggler = (n % 2 != 0);
+	typename T::value_type straggler = 0;
+	
+	if (hasStraggler)
 	{
-		if (c[0] > c[1])
-			std::swap(c[0], c[1]);
-		return;
+		straggler = c.back();
+		c.pop_back();
+		n--;
 	}
-	if (c.size() <= 16)
+	
+	// Create pairs and ensure first element of each pair is larger
+	std::vector<std::pair<typename T::value_type, typename T::value_type>> pairs;
+	for (size_t i = 0; i < n; i += 2)
 	{
-		insertionSort(c);
-		return;
+		if (c[i] > c[i + 1])
+			pairs.push_back(std::make_pair(c[i], c[i + 1]));
+		else
+			pairs.push_back(std::make_pair(c[i + 1], c[i]));
 	}
-	T left(c.begin(), c.begin() + c.size() / 2);
-	T right(c.begin() + c.size() / 2, c.end());
-
-	FordJohnson(left);
-	FordJohnson(right);
-
-	mergeSort(c, left, right); 
+	
+	// Step 2: Recursively sort the larger elements (first elements of pairs)
+	if (pairs.size() > 1)
+	{
+		T mainChain;
+		for (size_t i = 0; i < pairs.size(); i++)
+			mainChain.push_back(pairs[i].first);
+		
+		FordJohnson(mainChain);
+		
+		// Rebuild pairs based on sorted main chain
+		std::vector<std::pair<typename T::value_type, typename T::value_type> > sortedPairs;
+		for (size_t i = 0; i < mainChain.size(); i++)
+		{
+			for (size_t j = 0; j < pairs.size(); j++)
+			{
+				if (pairs[j].first == mainChain[i])
+				{
+					sortedPairs.push_back(pairs[j]);
+					break;
+				}
+			}
+		}
+		pairs = sortedPairs;
+	}
+	
+	// Step 3: Build the main chain (sorted larger elements)
+	c.clear();
+	for (size_t i = 0; i < pairs.size(); i++)
+		c.push_back(pairs[i].first);
+	
+	// Step 4: Insert the smaller elements using Jacobsthal sequence
+	T pending;
+	for (size_t i = 0; i < pairs.size(); i++)
+		pending.push_back(pairs[i].second);
+	
+	// Insert first element of pending at the beginning
+	if (!pending.empty())
+	{
+		c.insert(c.begin(), pending[0]);
+	}
+	
+	// Generate Jacobsthal sequence for insertion order
+	std::vector<size_t> jacobSequence;
+	generateJacobsthalSequence<T>(jacobSequence, pending.size());
+	
+	// Insert pending elements using Jacobsthal sequence
+	std::vector<bool> inserted(pending.size(), false);
+	inserted[0] = true; // First element already inserted
+	
+	for (size_t i = 0; i < jacobSequence.size(); i++)
+	{
+		size_t jacobIdx = jacobSequence[i] - 1; // Adjust for 0-based indexing
+		
+		// Insert elements in decreasing order from current Jacobsthal number to previous
+		size_t prevJacob = (i > 0) ? jacobSequence[i - 1] : 1;
+		
+		for (size_t j = jacobIdx; j >= prevJacob && j < pending.size(); j--)
+		{
+			if (!inserted[j])
+			{
+				// Find position where pairs[j].first is in c
+				size_t searchLimit = 0;
+				for (size_t k = 0; k < c.size(); k++)
+				{
+					if (c[k] == pairs[j].first)
+					{
+						searchLimit = k;
+						break;
+					}
+				}
+				
+				binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, pending[j]);
+				inserted[j] = true;
+			}
+			if (j == 0)
+				break;
+		}
+	}
+	
+	// Insert any remaining pending elements
+	for (size_t i = 0; i < pending.size(); i++)
+	{
+		if (!inserted[i])
+		{
+			size_t searchLimit = 0;
+			for (size_t k = 0; k < c.size(); k++)
+			{
+				if (c[k] == pairs[i].first)
+				{
+					searchLimit = k;
+					break;
+				}
+			}
+			binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, pending[i]);
+		}
+	}
+	
+	// Step 5: Insert straggler if exists
+	if (hasStraggler)
+	{
+		binaryInsert(c, c.begin(), c.end(), straggler);
+	}
 }
 
 void PMergeMe::checkInput(char **av)
