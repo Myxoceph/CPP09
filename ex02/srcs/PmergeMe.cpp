@@ -6,7 +6,7 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 15:42:55 by abakirca          #+#    #+#             */
-/*   Updated: 2025/10/20 16:53:02 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/10/23 12:21:37 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,21 +100,22 @@ void PMergeMe::FordJohnson(T &c)
 {
 	if (c.size() <= 1)
 		return;
-	
-	// Step 1: Create pairs and compare
 	size_t n = c.size();
-	bool hasStraggler = (n % 2 != 0);
-	typename T::value_type straggler = 0;
-	
-	if (hasStraggler)
+	bool isOdd;
+	if (n % 2 == 0)
+		isOdd = false;
+	else
+		isOdd = true;
+	typename T::value_type odd = 0;
+
+	if (isOdd)
 	{
-		straggler = c.back();
+		odd = c.back();
 		c.pop_back();
 		n--;
 	}
-	
-	// Create pairs and ensure first element of each pair is larger
-	std::vector<std::pair<typename T::value_type, typename T::value_type>> pairs;
+
+	std::vector<std::pair<typename T::value_type, typename T::value_type> > pairs;
 	for (size_t i = 0; i < n; i += 2)
 	{
 		if (c[i] > c[i + 1])
@@ -122,23 +123,20 @@ void PMergeMe::FordJohnson(T &c)
 		else
 			pairs.push_back(std::make_pair(c[i + 1], c[i]));
 	}
-	
-	// Step 2: Recursively sort the larger elements (first elements of pairs)
 	if (pairs.size() > 1)
 	{
-		T mainChain;
+		T main;
 		for (size_t i = 0; i < pairs.size(); i++)
-			mainChain.push_back(pairs[i].first);
+			main.push_back(pairs[i].first);
 		
-		FordJohnson(mainChain);
-		
-		// Rebuild pairs based on sorted main chain
+		FordJohnson(main);
+
 		std::vector<std::pair<typename T::value_type, typename T::value_type> > sortedPairs;
-		for (size_t i = 0; i < mainChain.size(); i++)
+		for (size_t i = 0; i < main.size(); i++)
 		{
 			for (size_t j = 0; j < pairs.size(); j++)
 			{
-				if (pairs[j].first == mainChain[i])
+				if (pairs[j].first == main[i])
 				{
 					sortedPairs.push_back(pairs[j]);
 					break;
@@ -147,43 +145,30 @@ void PMergeMe::FordJohnson(T &c)
 		}
 		pairs = sortedPairs;
 	}
-	
-	// Step 3: Build the main chain (sorted larger elements)
+
 	c.clear();
 	for (size_t i = 0; i < pairs.size(); i++)
 		c.push_back(pairs[i].first);
-	
-	// Step 4: Insert the smaller elements using Jacobsthal sequence
-	T pending;
+	T small;
 	for (size_t i = 0; i < pairs.size(); i++)
-		pending.push_back(pairs[i].second);
-	
-	// Insert first element of pending at the beginning
-	if (!pending.empty())
+		small.push_back(pairs[i].second);
+	if (!small.empty())
 	{
-		c.insert(c.begin(), pending[0]);
+		c.insert(c.begin(), small[0]);
 	}
-	
-	// Generate Jacobsthal sequence for insertion order
-	std::vector<size_t> jacobSequence;
-	generateJacobsthalSequence<T>(jacobSequence, pending.size());
-	
-	// Insert pending elements using Jacobsthal sequence
-	std::vector<bool> inserted(pending.size(), false);
-	inserted[0] = true; // First element already inserted
-	
-	for (size_t i = 0; i < jacobSequence.size(); i++)
+	std::vector<size_t> jacobsthal;
+	generateJacobsthalSequence<T>(jacobsthal, small.size());
+	std::vector<bool> inserted(small.size(), false);
+	inserted[0] = true;
+	for (size_t i = 0; i < jacobsthal.size(); i++)
 	{
-		size_t jacobIdx = jacobSequence[i] - 1; // Adjust for 0-based indexing
+		size_t jacobIdx = jacobsthal[i] - 1;
+		size_t prevJacob = (i > 0) ? jacobsthal[i - 1] : 1;
 		
-		// Insert elements in decreasing order from current Jacobsthal number to previous
-		size_t prevJacob = (i > 0) ? jacobSequence[i - 1] : 1;
-		
-		for (size_t j = jacobIdx; j >= prevJacob && j < pending.size(); j--)
+		for (size_t j = jacobIdx; j >= prevJacob && j < small.size(); j--)
 		{
 			if (!inserted[j])
 			{
-				// Find position where pairs[j].first is in c
 				size_t searchLimit = 0;
 				for (size_t k = 0; k < c.size(); k++)
 				{
@@ -193,17 +178,14 @@ void PMergeMe::FordJohnson(T &c)
 						break;
 					}
 				}
-				
-				binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, pending[j]);
+				binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, small[j]);
 				inserted[j] = true;
 			}
 			if (j == 0)
 				break;
 		}
 	}
-	
-	// Insert any remaining pending elements
-	for (size_t i = 0; i < pending.size(); i++)
+	for (size_t i = 0; i < small.size(); i++)
 	{
 		if (!inserted[i])
 		{
@@ -216,15 +198,11 @@ void PMergeMe::FordJohnson(T &c)
 					break;
 				}
 			}
-			binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, pending[i]);
+			binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, small[i]);
 		}
 	}
-	
-	// Step 5: Insert straggler if exists
-	if (hasStraggler)
-	{
-		binaryInsert(c, c.begin(), c.end(), straggler);
-	}
+	if (isOdd)
+		binaryInsert(c, c.begin(), c.end(), odd);
 }
 
 void PMergeMe::checkInput(char **av)
