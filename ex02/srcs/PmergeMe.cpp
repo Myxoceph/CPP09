@@ -6,7 +6,7 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 15:42:55 by abakirca          #+#    #+#             */
-/*   Updated: 2025/10/23 12:21:37 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/10/24 18:02:28 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,11 @@ size_t PMergeMe::generateJacobsthal(size_t n)
 		return 0;
 	if (n == 1)
 		return 1;
+
 	size_t a = 0;
 	size_t b = 1;
 	size_t result = 0;
+
 	for (size_t i = 2; i <= n; i++)
 	{
 		result = b + 2 * a;
@@ -66,24 +68,46 @@ void PMergeMe::generateJacobsthalSequence(std::vector<size_t> &seq, size_t len)
 	seq.clear();
 	if (len == 0)
 		return;
-	
+
 	size_t idx = 3;
+	std::vector<size_t> jacobsthalNumbers;
+	jacobsthalNumbers.push_back(1);
+	
 	while (true)
 	{
 		size_t jacob = generateJacobsthal<T>(idx);
-		if (jacob >= len)
+		if (jacob > len)
+		{
+			jacobsthalNumbers.push_back(len);
 			break;
-		seq.push_back(jacob);
+		}
+		jacobsthalNumbers.push_back(jacob);
 		idx++;
+	}
+
+	for (size_t i = 1; i < jacobsthalNumbers.size(); i++)
+	{
+		size_t curr = jacobsthalNumbers[i];
+		size_t prev = jacobsthalNumbers[i - 1];
+		
+		for (size_t j = curr; j > prev; j--)
+		{
+			if (j <= len)
+				seq.push_back(j);
+		}
 	}
 }
 
 template <typename T>
-typename T::iterator PMergeMe::binaryInsert(T &c, typename T::iterator begin, typename T::iterator end, typename T::value_type value)
+typename T::iterator PMergeMe::binaryInsert(
+	T &c,
+	typename T::iterator begin,
+	typename T::iterator end,
+	typename T::value_type value)
 {
 	typename T::iterator left = begin;
 	typename T::iterator right = end;
-	
+
 	while (left < right)
 	{
 		typename T::iterator mid = left + std::distance(left, right) / 2;
@@ -96,16 +120,13 @@ typename T::iterator PMergeMe::binaryInsert(T &c, typename T::iterator begin, ty
 }
 
 template <typename T>
-void PMergeMe::FordJohnson(T &c) 
+void PMergeMe::FordJohnson(T &c)
 {
 	if (c.size() <= 1)
 		return;
+
 	size_t n = c.size();
-	bool isOdd;
-	if (n % 2 == 0)
-		isOdd = false;
-	else
-		isOdd = true;
+	bool isOdd = (n % 2 != 0);
 	typename T::value_type odd = 0;
 
 	if (isOdd)
@@ -123,12 +144,13 @@ void PMergeMe::FordJohnson(T &c)
 		else
 			pairs.push_back(std::make_pair(c[i + 1], c[i]));
 	}
+
 	if (pairs.size() > 1)
 	{
 		T main;
 		for (size_t i = 0; i < pairs.size(); i++)
 			main.push_back(pairs[i].first);
-		
+
 		FordJohnson(main);
 
 		std::vector<std::pair<typename T::value_type, typename T::value_type> > sortedPairs;
@@ -149,42 +171,48 @@ void PMergeMe::FordJohnson(T &c)
 	c.clear();
 	for (size_t i = 0; i < pairs.size(); i++)
 		c.push_back(pairs[i].first);
+
 	T small;
 	for (size_t i = 0; i < pairs.size(); i++)
 		small.push_back(pairs[i].second);
+
 	if (!small.empty())
-	{
 		c.insert(c.begin(), small[0]);
-	}
+
 	std::vector<size_t> jacobsthal;
 	generateJacobsthalSequence<T>(jacobsthal, small.size());
+
 	std::vector<bool> inserted(small.size(), false);
 	inserted[0] = true;
-	for (size_t i = 0; i < jacobsthal.size(); i++)
+
+	for (size_t i = 1; i < jacobsthal.size(); i++)
 	{
-		size_t jacobIdx = jacobsthal[i] - 1;
-		size_t prevJacob = (i > 0) ? jacobsthal[i - 1] : 1;
-		
-		for (size_t j = jacobIdx; j >= prevJacob && j < small.size(); j--)
+		size_t idx = jacobsthal[i] - 1;
+		if (idx >= small.size())
+			continue;
+
+		size_t prev = jacobsthal[i - 1];
+		for (size_t j = idx; j + 1 > prev; j--)
 		{
-			if (!inserted[j])
+			if (j >= small.size() || inserted[j])
+				continue;
+
+			size_t searchLimit = 0;
+			for (size_t k = 0; k < c.size(); k++)
 			{
-				size_t searchLimit = 0;
-				for (size_t k = 0; k < c.size(); k++)
+				if (c[k] == pairs[j].first)
 				{
-					if (c[k] == pairs[j].first)
-					{
-						searchLimit = k;
-						break;
-					}
+					searchLimit = k;
+					break;
 				}
-				binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, small[j]);
-				inserted[j] = true;
 			}
+			binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, small[j]);
+			inserted[j] = true;
 			if (j == 0)
 				break;
 		}
 	}
+
 	for (size_t i = 0; i < small.size(); i++)
 	{
 		if (!inserted[i])
@@ -201,13 +229,16 @@ void PMergeMe::FordJohnson(T &c)
 			binaryInsert(c, c.begin(), c.begin() + searchLimit + 1, small[i]);
 		}
 	}
+
 	if (isOdd)
 		binaryInsert(c, c.begin(), c.end(), odd);
 }
 
+
 void PMergeMe::checkInput(char **av)
 {
 	int i = 1;
+	std::set<int> seen;
 
 	while (av[i])
 	{
@@ -215,18 +246,23 @@ void PMergeMe::checkInput(char **av)
 		for (size_t j = 0; j < str.size(); j++)
 		{
 			if (!isdigit(str[j]))
-			{
 				throw std::invalid_argument("Invalid input");
-			}
 		}
+
 		long num = std::strtol(str.c_str(), NULL, 10);
 		if (num > std::numeric_limits<int>::max())
 			throw std::invalid_argument("Invalid input");
-		vecarr.push_back(num);
-		deqarr.push_back(num);
+
+		if (seen.count(num))
+			throw std::invalid_argument("No duplicates allowed");
+
+		seen.insert(num);
+		vecarr.push_back(static_cast<int>(num));
+		deqarr.push_back(static_cast<int>(num));
 		i++;
 	}
 }
+
 
 void PMergeMe::print(char **input)
 {

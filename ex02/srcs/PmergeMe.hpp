@@ -6,7 +6,7 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 15:44:49 by abakirca          #+#    #+#             */
-/*   Updated: 2025/10/20 16:51:13 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/10/24 18:00:23 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <exception>
 #include <cstdlib>
 #include <ctime>
+#include <set>
 
 #define GREEN "\033[1;32m"
 #define YELLOW "\033[1;33m"
