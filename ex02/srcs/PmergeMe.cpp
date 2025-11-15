@@ -6,7 +6,7 @@
 /*   By: abakirca <abakirca@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 15:42:55 by abakirca          #+#    #+#             */
-/*   Updated: 2025/10/24 18:02:28 by abakirca         ###   ########.fr       */
+/*   Updated: 2025/10/30 13:35:06 by abakirca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,11 +99,7 @@ void PMergeMe::generateJacobsthalSequence(std::vector<size_t> &seq, size_t len)
 }
 
 template <typename T>
-typename T::iterator PMergeMe::binaryInsert(
-	T &c,
-	typename T::iterator begin,
-	typename T::iterator end,
-	typename T::value_type value)
+typename T::iterator PMergeMe::binaryInsert(T &c, typename T::iterator begin, typename T::iterator end, typename T::value_type value)
 {
 	typename T::iterator left = begin;
 	typename T::iterator right = end;
@@ -160,7 +156,8 @@ void PMergeMe::FordJohnson(T &c)
 			{
 				if (pairs[j].first == main[i])
 				{
-					sortedPairs.push_back(pairs[j]);
+					if (pairs.size() > 1)
+						sortedPairs.push_back(pairs[j]);
 					break;
 				}
 			}
